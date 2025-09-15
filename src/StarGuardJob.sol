@@ -158,9 +158,17 @@ contract StarGuardJob is IJob {
     // --- getters ---
 
     /**
+     * @notice Output the amount of active starGuards
+     * @return length The amount of active starGuards
+     */
+    function length() public view returns (uint256) {
+        return starGuards.length();
+    }
+
+    /**
      * @notice Checks if the job has the specified StarGuard contract
      * @param starGuard The StarGuard contract
-     * @return Whether the StarGuard is already there
+     * @return Whether The StarGuard is already there
      */
     function has(address starGuard) public view returns (bool) {
         return starGuards.contains(starGuard);

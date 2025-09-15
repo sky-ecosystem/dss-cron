@@ -6,11 +6,12 @@ libs = ["lib"]
 solc = '0.8.13'
 # Enabling optimizations to improve gas usage.
 optimizer = true
+evm_version = "cancun"
 
 fs_permissions = [
     { access = "read", path = "./out/" },
     { access = "read", path = "./script/input/" },
-    { access = "read-write", path = "./script/output/" }
+    { access = "read-write", path = "./script/output/" },
 ]
 
 [rpc_endpoints]
