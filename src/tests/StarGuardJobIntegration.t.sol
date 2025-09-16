@@ -95,6 +95,7 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
 
     address internal constant unauthedUser = address(0xB0B);
     address internal constant starGuardSpark = address(0x35bb93c01C425Ba940C298E372E1D2ad6df2CA87);
+    address internal constant starGuardGrove = address(0x667FC40C9d6e76117937d7d93B948Fb422D97790);
 
     StarGuardJob public job;
     address public pauseProxy;
@@ -109,9 +110,12 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
         pauseProxy = dss.chainlog.getAddress("MCD_PAUSE_PROXY");
 
         // Init starGuardSpark
-        address subProxy = StarGuardLike(starGuardSpark).subProxy();
-        vm.prank(pauseProxy);
-        SubProxyLike(subProxy).rely(starGuardSpark);
+        address subProxySpark = StarGuardLike(starGuardSpark).subProxy();
+        vm.prank(pauseProxy); SubProxyLike(subProxySpark).rely(starGuardSpark);
+
+        // Init starGuardGrove
+        address subProxyGrove = StarGuardLike(starGuardGrove).subProxy();
+        vm.prank(pauseProxy); SubProxyLike(subProxyGrove).rely(starGuardGrove);
     }
 
     function testAuth() public {
@@ -164,28 +168,49 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
     }
 
     function testWork() public {
-        // Prepare job
+        // Prepare jobs
         job.set(starGuardSpark);
+        job.set(starGuardGrove);
 
-        // Prepare StarGuard
-        address spell = address(new StandardStarSpell());
-        vm.prank(pauseProxy);
-        StarGuardLike(starGuardSpark).plot(spell, spell.codehash);
+        // Plot both spells
+        address spellSpark = address(new StandardStarSpell());
+        vm.prank(pauseProxy); StarGuardLike(starGuardSpark).plot(spellSpark, spellSpark.codehash);
+        address spellGrove = address(new StandardStarSpell());
+        vm.prank(pauseProxy); StarGuardLike(starGuardGrove).plot(spellGrove, spellGrove.codehash);
 
-        // Check workable state
-        uint256 beforeWorkable = vm.snapshot();
-        (bool canWork, bytes memory args) = job.workable(NET_A);
-        assertTrue(canWork, "unexpected workable() false with spell");
-        (address starGuard) = abi.decode(args, (address));
-        assertEq(starGuard, starGuardSpark, "unexpected starGuard address");
+        // Check workable state (for Spark)
+        {
+            uint256 beforeWorkable = vm.snapshot();
+            (bool canWork, bytes memory args) = job.workable(NET_A);
+            assertTrue(canWork, "unexpected workable() false with spell");
+            (address starGuard) = abi.decode(args, (address));
+            assertEq(starGuard, starGuardSpark, "unexpected starGuard address");
 
-        // Work
-        vm.revertTo(beforeWorkable); // snapshot is required as `workable` modifies state
-        vm.expectEmit(true, true, true, true);
-        emit Work(NET_A, starGuardSpark, spell);
-        job.work(NET_A, args);
-        (address addr,,) = StarGuardLike(starGuardSpark).spellData();
-        assertEq(addr, address(0), "unexpected starGuard spell after execution");
+            // Work
+            vm.revertTo(beforeWorkable); // snapshot is required as `workable` modifies state
+            vm.expectEmit(true, true, true, true);
+            emit Work(NET_A, starGuardSpark, spellSpark);
+            job.work(NET_A, args);
+            (address addr,,) = StarGuardLike(starGuardSpark).spellData();
+            assertEq(addr, address(0), "unexpected starGuard spell after execution");
+        }
+
+        // Check workable state (for Grove, after Spark was executed)
+        {
+            uint256 beforeWorkable = vm.snapshot();
+            (bool canWork, bytes memory args) = job.workable(NET_A);
+            assertTrue(canWork, "unexpected workable() false with spell");
+            (address starGuard) = abi.decode(args, (address));
+            assertEq(starGuard, starGuardGrove, "unexpected starGuard address");
+
+            // Work
+            vm.revertTo(beforeWorkable); // snapshot is required as `workable` modifies state
+            vm.expectEmit(true, true, true, true);
+            emit Work(NET_A, starGuardGrove, spellGrove);
+            job.work(NET_A, args);
+            (address addr,,) = StarGuardLike(starGuardGrove).spellData();
+            assertEq(addr, address(0), "unexpected starGuard spell after execution");
+        }
     }
 
     function testWorkWithoutSpell() public {
