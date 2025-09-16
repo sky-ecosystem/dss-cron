@@ -79,13 +79,13 @@ contract StarGuardJob is IJob {
      * @notice A StarGuard contract was added to or modified in the job
      * @param starGuard The StarGuard contract
      */
-    event Set(address indexed starGuard);
+    event Add(address indexed starGuard);
 
     /**
      * @notice A StarGuard contract was removed from the job
      * @param starGuard The removed StarGuard contract
      */
-    event Rem(address indexed starGuard);
+    event Remove(address indexed starGuard);
 
     /**
      * @notice Work os executed for a distribution contract
@@ -138,21 +138,21 @@ contract StarGuardJob is IJob {
     }
 
     /**
-     * @notice Sets the StarGuard contract in the job
+     * @notice Adds the StarGuard contract in the job
      * @param starGuard The StarGuard contract to add
      */
-    function set(address starGuard) external auth {
+    function add(address starGuard) external auth {
         if (!starGuards.contains(starGuard)) starGuards.add(starGuard);
-        emit Set(starGuard);
+        emit Add(starGuard);
     }
 
     /**
      * @notice Removes the StarGuard contract from the job
      * @param starGuard The StarGuard contract to remove
      */
-    function rem(address starGuard) external auth {
+    function remove(address starGuard) external auth {
         if (!starGuards.remove(starGuard)) revert NotFound(starGuard);
-        emit Rem(starGuard);
+        emit Remove(starGuard);
     }
 
     // --- getters ---

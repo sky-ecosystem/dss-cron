@@ -101,8 +101,8 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
     address public pauseProxy;
 
     // --- Events ---
-    event Set(address indexed starGuard);
-    event Rem(address indexed starGuard);
+    event Add(address indexed starGuard);
+    event Remove(address indexed starGuard);
     event Work(bytes32 indexed network, address indexed starGuard, address starSpell);
 
     function setUpSub() internal virtual override {
@@ -122,55 +122,55 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
         checkAuth(address(job), "StarGuardJob");
     }
 
-    function testSet() public {
+    function testAdd() public {
         assertEq(job.length(), 0);
         assertFalse(job.has(starGuardSpark));
         vm.expectEmit(true, true, true, true);
-        emit Set(starGuardSpark);
-        job.set(starGuardSpark);
+        emit Add(starGuardSpark);
+        job.add(starGuardSpark);
         assertTrue(job.has(starGuardSpark));
         assertEq(job.length(), 1);
     }
 
-    function testSetNoAuth() public {
+    function testAddNoAuth() public {
         vm.prank(unauthedUser);
         vm.expectRevert("StarGuardJob/not-authorized");
-        job.set(starGuardSpark);
+        job.add(starGuardSpark);
     }
 
-    function testSetDuplicate() public {
-        job.set(starGuardSpark);
+    function testAddDuplicate() public {
+        job.add(starGuardSpark);
         assertTrue(job.has(starGuardSpark));
-        job.set(starGuardSpark);
+        job.add(starGuardSpark);
         assertTrue(job.has(starGuardSpark));
         assertEq(job.length(), 1);
     }
 
-    function testRem() public {
-        job.set(starGuardSpark);
+    function testRemove() public {
+        job.add(starGuardSpark);
         vm.expectEmit(true, true, true, true);
-        emit Rem(starGuardSpark);
-        job.rem(starGuardSpark);
+        emit Remove(starGuardSpark);
+        job.remove(starGuardSpark);
         assertFalse(job.has(starGuardSpark));
         assertEq(job.length(), 0);
     }
 
-    function testRemNoAuth() public {
-        job.set(starGuardSpark);
+    function testRemoveNoAuth() public {
+        job.add(starGuardSpark);
         vm.prank(unauthedUser);
         vm.expectRevert("StarGuardJob/not-authorized");
-        job.rem(starGuardSpark);
+        job.remove(starGuardSpark);
     }
 
-    function testRemNotFound() public {
+    function testRemoveNotFound() public {
         vm.expectRevert(abi.encodeWithSelector(StarGuardJob.NotFound.selector, starGuardSpark));
-        job.rem(starGuardSpark);
+        job.remove(starGuardSpark);
     }
 
     function testWork() public {
         // Prepare jobs
-        job.set(starGuardSpark);
-        job.set(starGuardGrove);
+        job.add(starGuardSpark);
+        job.add(starGuardGrove);
 
         // Plot both spells
         address spellSpark = address(new StandardStarSpell());
@@ -214,7 +214,7 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
     }
 
     function testWorkWithoutSpell() public {
-        job.set(starGuardSpark);
+        job.add(starGuardSpark);
         (bool canWork, bytes memory args) = job.workable(NET_A);
         assertFalse(canWork, "unexpected workable() true with no spell");
         assertEq(args, "No distribution", "unexpected calldata with no spell");
@@ -222,7 +222,7 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
 
     function testWorkWithDelayedSpell() public {
         // Prepare job
-        job.set(starGuardSpark);
+        job.add(starGuardSpark);
 
         // Prepare delayed spell
         uint256 executableAt = block.timestamp + 1 days;
@@ -262,7 +262,7 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
 
     function testWorkableWithInvalidSpell() public {
         // Prepare job
-        job.set(starGuardSpark);
+        job.add(starGuardSpark);
 
         // Prepare malicious spell
         address maliciousStarSpell = address(new InvalidStarSpell());
@@ -281,7 +281,7 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
 
     function testWorkableWithMaliciousSpell() public {
         // Prepare job
-        job.set(starGuardSpark);
+        job.add(starGuardSpark);
 
         // Prepare malicious spell
         address maliciousStarSpell = address(new MaliciousStarSpell(starGuardSpark));
