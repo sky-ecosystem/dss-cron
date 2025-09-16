@@ -21,10 +21,9 @@ import "./DssCronBase.t.sol";
 import {StarGuardJob} from "../StarGuardJob.sol";
 
 interface StarGuardLike {
-    function exec() external returns (address addr);
     function file(bytes32 what, uint256 data) external;
-    function maxDelay() external view returns (uint256 maxDelay);
     function plot(address addr_, bytes32 tag_) external;
+    function prob() external view returns (bool);
     function spellData() external view returns (address addr, bytes32 tag, uint256 deadline);
     function subProxy() external view returns (address subProxy);
 }
@@ -53,6 +52,32 @@ contract DelayedStarSpell {
     }
 
     function execute() external {}
+}
+
+contract MaliciousStarSpell {
+    address internal immutable starGuard;
+
+    constructor(address starGuard_) {
+        starGuard = starGuard_;
+    }
+
+    function isExecutable() external pure returns (bool) {
+        return true;
+    }
+
+    function execute() external {
+        address _starGuard = starGuard;
+        assembly {
+            // get free memory pointer
+            let ptr := mload(64)
+            // store starGuard address in the first 32 bytes
+            mstore(ptr, _starGuard)
+            // store slot index at the next 32 bytes
+            mstore(add(ptr, 32), 0)
+            // set 0 at the wards[starGuard] slot
+            sstore(keccak256(ptr, 64), 0)
+        }
+    }
 }
 
 contract StarGuardJobIntegrationTest is DssCronBaseTest {
@@ -174,27 +199,48 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
         StarGuardLike(starGuardSpark).plot(delayedStarSpell, delayedStarSpell.codehash);
         vm.stopPrank();
 
-        // Check workable state immidiately
+        // Check state immidiately
         {
             (bool canWork,) = job.workable(NET_A);
             assertFalse(canWork, "unexpected workable() true with delayed spell: immidiate");
         }
 
-        // Check workable state at executableAt - 1
+        // Check state at executableAt - 1
         {
             vm.warp(executableAt - 1);
             (bool canWork,) = job.workable(NET_A);
             assertFalse(canWork, "unexpected workable() true with delayed spell: almost at executable");
         }
 
-        // Check workable state at executableAt
-        vm.warp(executableAt);
-        uint256 beforeWorkable = vm.snapshot();
-        (bool canWork, bytes memory args) = job.workable(NET_A);
-        assertTrue(canWork, "unexpected workable() false with delayed spell: at executable");
+        // Check state at executableAt
+        {
+            vm.warp(executableAt);
+            uint256 beforeWorkable = vm.snapshot();
+            (bool canWork, bytes memory args) = job.workable(NET_A);
+            assertTrue(canWork, "unexpected workable() false with delayed spell: at executable");
+            
+            // Work
+            vm.revertTo(beforeWorkable); // snapshot is required as `workable` modifies state
+            job.work(NET_A, args);
+        }
+    }
 
-        // Work
-        vm.revertTo(beforeWorkable); // snapshot is required as `workable` modifies state
-        job.work(NET_A, args);
+    function testWorkableWithMaliciousSpell() public {
+        // Prepare job
+        job.set(starGuardSpark);
+
+        // Prepare malicious spell
+        address maliciousStarSpell = address(new MaliciousStarSpell(starGuardSpark));
+
+        // Prepare StarGuard
+        vm.prank(pauseProxy);
+        StarGuardLike(starGuardSpark).plot(maliciousStarSpell, maliciousStarSpell.codehash);
+
+        // Ensure that the `prob` returns true, so the spell is technically ready to be executed
+        assertTrue(StarGuardLike(starGuardSpark).prob(), "unexpected `prob` value after `plot`");
+
+        // Check workable state
+        (bool canWork,) = job.workable(NET_A);
+        assertFalse(canWork, "unexpected workable() true with malicious spell");
     }
 }
