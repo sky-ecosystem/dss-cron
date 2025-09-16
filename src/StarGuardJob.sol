@@ -54,12 +54,12 @@ contract StarGuardJob is IJob {
 
     /// @notice No args were provided to `work`.
     error NoArgs();
-    
-    /// @notice `work` was called too early or no vested amount is available.
-    error NotDue(address dist);
-    
-    /// @notice The distribution contract was was not added to the job.
-    error NotFound(address dist);
+
+    /**
+     * @notice The distribution contract was was not added to the job.
+     * @param starGuard The StarGuard contract
+     */
+    error NotFound(address starGuard);
 
     // --- events ---
 
