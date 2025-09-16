@@ -40,6 +40,16 @@ contract StandardStarSpell {
     function execute() external {}
 }
 
+contract InvalidStarSpell {
+    function isExecutable() external pure returns (bool) {
+        return true;
+    }
+
+    function execute() external pure {
+        revert("error");
+    }
+}
+
 contract DelayedStarSpell {
     uint256 internal immutable executableAt;
 
@@ -223,6 +233,25 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
             vm.revertTo(beforeWorkable); // snapshot is required as `workable` modifies state
             job.work(NET_A, args);
         }
+    }
+
+    function testWorkableWithInvalidSpell() public {
+        // Prepare job
+        job.set(starGuardSpark);
+
+        // Prepare malicious spell
+        address maliciousStarSpell = address(new InvalidStarSpell());
+
+        // Prepare StarGuard
+        vm.prank(pauseProxy);
+        StarGuardLike(starGuardSpark).plot(maliciousStarSpell, maliciousStarSpell.codehash);
+
+        // Ensure that the `prob` returns true, so the spell is technically ready to be executed
+        assertTrue(StarGuardLike(starGuardSpark).prob(), "unexpected `prob` value after `plot`");
+
+        // Check workable state
+        (bool canWork,) = job.workable(NET_A);
+        assertFalse(canWork, "unexpected workable() true with malicious spell");
     }
 
     function testWorkableWithMaliciousSpell() public {
