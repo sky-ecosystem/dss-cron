@@ -56,10 +56,16 @@ contract StarGuardJob is IJob {
     error NoArgs();
 
     /**
-     * @notice The distribution contract was was not added to the job.
+     * @notice The StarGuard contract was not added to the job.
      * @param starGuard The StarGuard contract
      */
     error NotFound(address starGuard);
+
+    /**
+     * @notice The StarGuard contract was already added to the job.
+     * @param starGuard The StarGuard contract
+     */
+    error AlreadyAdded(address starGuard);
 
     // --- events ---
 
@@ -88,10 +94,10 @@ contract StarGuardJob is IJob {
     event Remove(address indexed starGuard);
 
     /**
-     * @notice Work os executed for a distribution contract
+     * @notice Work os executed
      * @param network The keeper who executed the job
-     * @param starGuard The distribution contract where the distribution was made
-     * @param starSpell The star payload address
+     * @param starGuard The StarGuard which executed the payload
+     * @param starSpell The payload address
      */
     event Work(bytes32 indexed network, address indexed starGuard, address starSpell);
 
@@ -142,7 +148,7 @@ contract StarGuardJob is IJob {
      * @param starGuard The StarGuard contract to add
      */
     function add(address starGuard) external auth {
-        if (!starGuards.contains(starGuard)) starGuards.add(starGuard);
+        if (!starGuards.add(starGuard)) revert AlreadyAdded(starGuard);
         emit Add(starGuard);
     }
 
@@ -218,6 +224,6 @@ contract StarGuardJob is IJob {
                 continue;
             }
         }
-        return (false, bytes("No distribution"));
+        return (false, bytes("No spells to execute"));
     }
 }

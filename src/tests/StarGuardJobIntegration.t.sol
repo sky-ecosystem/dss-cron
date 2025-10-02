@@ -141,8 +141,8 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
     function testAddDuplicate() public {
         job.add(starGuardSpark);
         assertTrue(job.has(starGuardSpark));
+        vm.expectRevert(abi.encodeWithSelector(StarGuardJob.AlreadyAdded.selector, starGuardSpark));
         job.add(starGuardSpark);
-        assertTrue(job.has(starGuardSpark));
         assertEq(job.length(), 1);
     }
 
@@ -217,7 +217,7 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
         job.add(starGuardSpark);
         (bool canWork, bytes memory args) = job.workable(NET_A);
         assertFalse(canWork, "unexpected workable() true with no spell");
-        assertEq(args, "No distribution", "unexpected calldata with no spell");
+        assertEq(args, "No spells to execute", "unexpected calldata with no spell");
     }
 
     function testWorkWithDelayedSpell() public {
