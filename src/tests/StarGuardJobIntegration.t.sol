@@ -231,10 +231,10 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
         StarGuardLike(starGuardSpark).plot(delayedStarSpell, delayedStarSpell.codehash);
         vm.stopPrank();
 
-        // Check state immidiately
+        // Check state immediately
         {
             (bool canWork,) = job.workable(NET_A);
-            assertFalse(canWork, "unexpected workable() true with delayed spell: immidiate");
+            assertFalse(canWork, "unexpected workable() true with delayed spell: immediate");
         }
 
         // Check state at executableAt - 1
@@ -273,7 +273,7 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
 
         // Check workable state
         (bool canWork,) = job.workable(NET_A);
-        assertFalse(canWork, "unexpected workable() true with malicious spell");
+        assertFalse(canWork, "unexpected workable() true with invalid spell");
     }
 
     function testWorkableWithMaliciousSpell() public {
