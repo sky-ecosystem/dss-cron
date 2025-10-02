@@ -216,8 +216,6 @@ contract StarGuardJob is IJob {
         uint256 len = starGuards.length();
         for (uint256 i = 0; i < len; i++) {
             address starGuard = starGuards.at(i);
-            if (!StarGuardLike(starGuard).prob()) continue;
-
             try this.work(network, abi.encode(starGuard)) {
                 return (true, abi.encode(starGuard));
             } catch {
