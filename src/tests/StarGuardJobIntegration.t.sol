@@ -122,6 +122,16 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
         checkAuth(address(job), "StarGuardJob");
     }
 
+    function testAuthModifiers() public {
+        bytes4[] memory authedMethods = new bytes4[](2);
+        authedMethods[0] = StarGuardJob.add.selector;
+        authedMethods[1] = StarGuardJob.remove.selector;
+
+        vm.startPrank(unauthedUser);
+        checkModifier(address(job), "StarGuardJob/not-authorized", authedMethods);
+        vm.stopPrank();
+    }
+
     function testAdd() public {
         assertEq(job.length(), 0);
         assertFalse(job.has(starGuardSpark));
@@ -130,12 +140,6 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
         job.add(starGuardSpark);
         assertTrue(job.has(starGuardSpark));
         assertEq(job.length(), 1);
-    }
-
-    function testAddNoAuth() public {
-        vm.prank(unauthedUser);
-        vm.expectRevert("StarGuardJob/not-authorized");
-        job.add(starGuardSpark);
     }
 
     function testAddDuplicate() public {
@@ -153,13 +157,6 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
         job.remove(starGuardSpark);
         assertFalse(job.has(starGuardSpark));
         assertEq(job.length(), 0);
-    }
-
-    function testRemoveNoAuth() public {
-        job.add(starGuardSpark);
-        vm.prank(unauthedUser);
-        vm.expectRevert("StarGuardJob/not-authorized");
-        job.remove(starGuardSpark);
     }
 
     function testRemoveNotFound() public {
