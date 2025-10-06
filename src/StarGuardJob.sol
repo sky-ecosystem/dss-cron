@@ -91,7 +91,7 @@ contract StarGuardJob is IJob {
      * @notice A StarGuard contract was removed from the job
      * @param starGuard The removed StarGuard contract
      */
-    event Remove(address indexed starGuard);
+    event Rem(address indexed starGuard);
 
     /**
      * @notice Work os executed
@@ -156,9 +156,9 @@ contract StarGuardJob is IJob {
      * @notice Removes the StarGuard contract from the job
      * @param starGuard The StarGuard contract to remove
      */
-    function remove(address starGuard) external auth {
+    function rem(address starGuard) external auth {
         if (!starGuards.remove(starGuard)) revert NotFound(starGuard);
-        emit Remove(starGuard);
+        emit Rem(starGuard);
     }
 
     // --- getters ---

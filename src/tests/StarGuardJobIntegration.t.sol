@@ -102,7 +102,7 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
 
     // --- Events ---
     event Add(address indexed starGuard);
-    event Remove(address indexed starGuard);
+    event Rem(address indexed starGuard);
     event Work(bytes32 indexed network, address indexed starGuard, address starSpell);
 
     function setUpSub() internal virtual override {
@@ -125,7 +125,7 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
     function testAuthModifiers() public {
         bytes4[] memory authedMethods = new bytes4[](2);
         authedMethods[0] = StarGuardJob.add.selector;
-        authedMethods[1] = StarGuardJob.remove.selector;
+        authedMethods[1] = StarGuardJob.rem.selector;
 
         vm.startPrank(unauthedUser);
         checkModifier(address(job), "StarGuardJob/not-authorized", authedMethods);
@@ -153,15 +153,15 @@ contract StarGuardJobIntegrationTest is DssCronBaseTest {
     function testRemove() public {
         job.add(starGuardSpark);
         vm.expectEmit(true, true, true, true);
-        emit Remove(starGuardSpark);
-        job.remove(starGuardSpark);
+        emit Rem(starGuardSpark);
+        job.rem(starGuardSpark);
         assertFalse(job.has(starGuardSpark));
         assertEq(job.length(), 0);
     }
 
     function testRemoveNotFound() public {
         vm.expectRevert(abi.encodeWithSelector(StarGuardJob.NotFound.selector, starGuardSpark));
-        job.remove(starGuardSpark);
+        job.rem(starGuardSpark);
     }
 
     function testWork() public {
