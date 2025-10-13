@@ -19,7 +19,7 @@ LerpJob [maxDuration=1 day]: [0x8F8f2FC1F0380B9Ff4fE5c3142d0811aC89E32fB](https:
 D3MJob [threshold=500 bps, ttl=10 minutes]: [0x2Ea4aDE144485895B923466B4521F5ebC03a0AeF](https://etherscan.io/address/0x2Ea4aDE144485895B923466B4521F5ebC03a0AeF#code)  
 ClipperMomJob: [0x7E93C4f61C8E8874e7366cDbfeFF934Ed089f9fF](https://etherscan.io/address/0x7E93C4f61C8E8874e7366cDbfeFF934Ed089f9fF#code)
 OracleJob: [0xe717Ec34b2707fc8c226b34be5eae8482d06ED03](https://etherscan.io/address/0xe717Ec34b2707fc8c226b34be5eae8482d06ED03#code)  
-FlapJob [maxGasPrice=138 gwei]: [0xc32506E9bB590971671b649d9B8e18CB6260559F](https://etherscan.io/address/0xc32506E9bB590971671b649d9B8e18CB6260559F#code)  
+FlapJob [maxGasPrice=138 gwei]: [0xc32506E9bB590971671b649d9B8e18CB6260559F](https://etherscan.io/address/0xc32506E9bB590971671b649d9B8e18CB6260559F#code) // TODO: update  
 
 ## Network Payment Adapters
 
