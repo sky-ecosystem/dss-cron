@@ -20,6 +20,7 @@ D3MJob [threshold=500 bps, ttl=10 minutes]: [0x2Ea4aDE144485895B923466B4521F5ebC
 ClipperMomJob: [0x7E93C4f61C8E8874e7366cDbfeFF934Ed089f9fF](https://etherscan.io/address/0x7E93C4f61C8E8874e7366cDbfeFF934Ed089f9fF#code)
 OracleJob: [0xe717Ec34b2707fc8c226b34be5eae8482d06ED03](https://etherscan.io/address/0xe717Ec34b2707fc8c226b34be5eae8482d06ED03#code)  
 FlapJob [maxGasPrice=138 gwei]: [0xc32506E9bB590971671b649d9B8e18CB6260559F](https://etherscan.io/address/0xc32506E9bB590971671b649d9B8e18CB6260559F#code)  
+StarGuardJob: [0xB18d211fA69422a9A848B790C5B4a3957F7Aa44E](https://etherscan.io/address/0xb18d211fa69422a9a848b790c5b4a3957f7aa44e#code)
 
 ## Network Payment Adapters
 
