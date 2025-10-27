@@ -37,7 +37,6 @@ contract FlapJobTest is DssCronBaseTest {
         (bool canWork, bytes memory args) = flapJob.workable(NET_A);
         assertTrue(canWork, "Should be able to work");
         vm.revertTo(snapshot);
-
         flapJob.work(NET_A, args);
     }
 
