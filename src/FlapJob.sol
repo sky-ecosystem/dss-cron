@@ -21,14 +21,7 @@ interface SequencerLike {
     function isMaster(bytes32 network) external view returns (bool);
 }
 
-interface VatLike {
-    function sin(address) external view returns (uint256);
-}
-
-interface VowLike {
-    function Sin() external view returns (uint256);
-    function Ash() external view returns (uint256);
-    function heal(uint256) external;
+interface KickerLike {
     function flap() external;
 }
 
@@ -36,8 +29,7 @@ interface VowLike {
 contract FlapJob is IJob {
 
     SequencerLike public immutable sequencer;
-    VatLike       public immutable vat;
-    VowLike       public immutable vow;
+    KickerLike    public immutable kicker;
     uint256       public immutable maxGasPrice;
 
     // --- Errors ---
@@ -47,20 +39,17 @@ contract FlapJob is IJob {
     // --- Events ---
     event Work(bytes32 indexed network);
 
-    constructor(address _sequencer, address _vat, address _vow, uint256 _maxGasPrice) {
+    constructor(address _sequencer, address _kicker, uint256 _maxGasPrice) {
         sequencer   = SequencerLike(_sequencer);
-        vat         = VatLike(_vat);
-        vow         = VowLike(_vow);
+        kicker      = KickerLike(_kicker);
         maxGasPrice = _maxGasPrice;
     }
 
-    function work(bytes32 network, bytes calldata args) public {
+    function work(bytes32 network, bytes calldata) public {
         if (!sequencer.isMaster(network)) revert NotMaster(network);
         if (tx.gasprice > maxGasPrice)    revert GasPriceTooHigh(tx.gasprice, maxGasPrice);
 
-        uint256 toHeal = abi.decode(args, (uint256));
-        if (toHeal > 0) vow.heal(toHeal);
-        vow.flap();
+        kicker.flap();
 
         emit Work(network);
     }
@@ -68,14 +57,7 @@ contract FlapJob is IJob {
     function workable(bytes32 network) external override returns (bool, bytes memory) {
         if (!sequencer.isMaster(network)) return (false, bytes("Network is not master"));
 
-        bytes memory args;
-        uint256 unbackedTotal = vat.sin(address(vow));
-        uint256 unbackedVow   = vow.Sin() + vow.Ash();
-
-        // Check if need to cancel out free unbacked debt with system surplus
-        uint256 toHeal = unbackedTotal > unbackedVow ? unbackedTotal - unbackedVow : 0;
-        args = abi.encode(toHeal);
-
+        bytes memory args = "";
         try this.work(network, args) {
             // Flap succeeds
             return (true, args);
